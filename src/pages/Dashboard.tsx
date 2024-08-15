@@ -1,14 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Button, Form, message, Card, Row, Col } from 'antd';
+import { Upload, Button, Form, Input, message, Card, Row, Col } from 'antd';
 import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
-import { storage } from '../firebaseConfig';
+import { storage, firestore } from '../firebaseConfig';
 import { ref, listAll, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { collection, updateDoc, doc, getDocs } from 'firebase/firestore';
 import CompanyIntroduction from '../components/CompanyIntroduction';
+
+interface CompanyInfo {
+  website: string;
+  phone: string;
+  address: string;
+  gmail: string;
+  [key: string]: any;
+}
 
 const Dashboard: React.FC = () => {
   const [logo, setLogo] = useState<string | null>(null);
   const [banners, setBanners] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
+    website: '',
+    phone: '',
+    address: '',
+    gmail: '',
+  });
+  const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -39,15 +55,33 @@ const Dashboard: React.FC = () => {
     fetchImages();
   }, []);
 
-  const handleUpload = (file: any, folder: string, callback: (url: string) => void) => {
+  const fetchCompanyInfo = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(firestore, 'companyInfo'));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as CompanyInfo;
+        setCompanyInfo(data);
+        form.setFieldsValue(data); // Set form values
+      });
+    } catch (error) {
+      message.error('Failed to fetch company information!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanyInfo();
+  }, []);
+
+  const handleUpload = (file: File, folder: string, callback: (url: string) => void) => {
     const storageRef = ref(storage, `${folder}/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on(
       'state_changed',
-      (snapshot) => {
-        // Progress function
-      },
+      null,
       (error) => {
         message.error('Upload failed');
       },
@@ -60,36 +94,52 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  const handleLogoUpload = (file: any) => {
+  const handleLogoUpload = (file: File) => {
     const renamedFile = new File([file], 'logo.png', { type: file.type });
     handleUpload(renamedFile, 'logos', (url) => {
       setLogo(url);
-      localStorage.setItem('logo', url); // Lưu URL vào local storage
+      localStorage.setItem('logo', url); // Save to local storage
     });
     return false;
   };
 
-  const handleBannerUpload = (file: any) => {
+  const handleBannerUpload = (file: File) => {
     handleUpload(file, 'banners', (url) => {
       setBanners((prevBanners) => {
         const newBanners = [...prevBanners, url];
-        localStorage.setItem('banners', JSON.stringify(newBanners)); // Lưu URL vào local storage
+        localStorage.setItem('banners', JSON.stringify(newBanners)); // Save to local storage
         return newBanners;
       });
     });
     return false;
   };
 
-  const handleBannerUpdate = (file: any, index: number) => {
+  const handleBannerUpdate = (file: File, index: number) => {
     handleUpload(file, 'banners', (url) => {
       setBanners((prevBanners) => {
         const newBanners = [...prevBanners];
         newBanners[index] = url;
-        localStorage.setItem('banners', JSON.stringify(newBanners)); // Lưu URL vào local storage
+        localStorage.setItem('banners', JSON.stringify(newBanners)); // Save to local storage
         return newBanners;
       });
     });
     return false;
+  };
+
+  const handleCompanyInfoSubmit = async (values: CompanyInfo) => {
+    setLoading(true);
+    const hideLoading = message.loading('Saving company information...', 0);
+    try {
+      await updateDoc(doc(firestore, 'companyInfo', 'info'), values
+      );
+      message.success('Company information saved successfully');
+    } catch (error) {
+      console.error('Error saving company information:', error);
+      message.error('Failed to save company information');
+    } finally {
+      hideLoading();
+      setLoading(false);
+    }
   };
 
   const uploadButton = (
@@ -142,11 +192,58 @@ const Dashboard: React.FC = () => {
             </div>
           </Card>
         </Col>
-        <Col span={24}>
+        <Col span={24} style={{ marginTop: 16 }}>
+  <Card title="Thông tin công ty">
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleCompanyInfoSubmit}
+      initialValues={companyInfo}
+    >
+      <Form.Item
+        label="Website"
+        name="website"
+        rules={[{ required: true, message: 'Please input your website!' }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        label="Phone"
+        name="phone"
+        rules={[{ required: true, message: 'Please input your phone number!' }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        label="Address"
+        name="address"
+        rules={[{ required: true, message: 'Please input your address!' }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        label="Gmail"
+        name="gmail"
+        rules={[{ required: true, message: 'Please input your Gmail!' }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" loading={loading}>
+          Save
+        </Button>
+      </Form.Item>
+    </Form>
+  </Card>
+</Col>
+        <Col span={24}
+          style={{ marginTop: 16 }}
+        >
           <Card title="Giới thiệu công ty">
             <CompanyIntroduction />
           </Card>
         </Col>
+       
       </Row>
     </div>
   );

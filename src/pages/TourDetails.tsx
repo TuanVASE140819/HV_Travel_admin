@@ -86,8 +86,7 @@ const TourDetails: React.FC = () => {
   const handleUpdate = async (values: any) => {
     if (id) {
       const docRef = doc(firestore, 'tours', id);
-      const storage = getStorage();
-      let imageUrl = '';
+      let imageUrl = tour?.image || ''; // Giữ nguyên URL hình ảnh cũ nếu không có thay đổi
   
       if (values.image && values.image[0].originFileObj) {
         const imageFile = values.image[0].originFileObj;
@@ -171,6 +170,7 @@ const TourDetails: React.FC = () => {
       <Form.Item name="duration" label="Thời Gian" rules={[{ required: true, message: 'Vui lòng nhập thời gian' }]}>
         <Input />
       </Form.Item>
+      
     </Col>
   </Row>
   <Row gutter={16}>
@@ -204,6 +204,22 @@ const TourDetails: React.FC = () => {
       </Form.Item>
     </Col>
   </Row>
+  <Row gutter={16}>
+  <Form.Item
+        name="image"
+        label="Hình Ảnh"
+        valuePropName="fileList"
+        getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+      >
+        <Upload name="image" listType="picture" beforeUpload={
+          () =>
+            false
+        } maxCount={1}>
+          <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
+        </Upload>
+      </Form.Item>
+    </Row>
+ 
 </Card>
 <Card title="Thông Tin Chi Tiết" style={{ marginTop: 16 }}>
 <Form.Item label="Danh Sách Điểm Nổi Bật">
@@ -264,16 +280,7 @@ const TourDetails: React.FC = () => {
   </Button>
 </Form.Item>
 
-      <Form.Item
-        name="image"
-        label="Hình Ảnh"
-        valuePropName="fileList"
-        getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-      >
-        <Upload name="image" listType="picture" beforeUpload={() => false} maxCount={1}>
-          <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
-        </Upload>
-      </Form.Item>
+ 
       <Form.Item>
         <Button type="primary" htmlType="submit">
           Cập nhật
