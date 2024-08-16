@@ -13,6 +13,7 @@ interface Tour {
   departure: string;
   rating: number;
   image: string;
+  images: string[]; // Thêm trường images
   address?: string;
   phone?: string;
   highlights?: string[];
@@ -61,6 +62,12 @@ const TourDetails: React.FC = () => {
                 url: tourData.image,
               },
             ],
+            images: tourData.images?.map((url, index) => ({
+              uid: `${index}`,
+              name: `image${index}.png`,
+              status: 'done',
+              url,
+            })) || [],
             address: tourData.address,
             phone: tourData.phone,
             highlights: tourData.highlights?.join('\n'),
@@ -87,12 +94,24 @@ const TourDetails: React.FC = () => {
     if (id) {
       const docRef = doc(firestore, 'tours', id);
       let imageUrl = tour?.image || ''; // Giữ nguyên URL hình ảnh cũ nếu không có thay đổi
-  
+      let images = tour?.images || []; 
+
       if (values.image && values.image[0].originFileObj) {
         const imageFile = values.image[0].originFileObj;
         const storageRef = ref(storage, `tour-images/${imageFile.name}`);
         await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(storageRef);
+      } else if (values.images) {
+        images = await Promise.all(
+          values.images.map(async (file: any) => {
+            if (file.originFileObj) {
+              const storageRef = ref(storage, `tour-images/${file.originFileObj.name}`);
+              await uploadBytes(storageRef, file.originFileObj);
+              return await getDownloadURL(storageRef);
+            }
+            return file.url;
+          })
+        );
       }
   
       const updatedTour: Partial<Tour> = {
@@ -102,6 +121,7 @@ const TourDetails: React.FC = () => {
         departure: values.departure,
         rating: values.rating,
         image: imageUrl,
+        images: images,
         address: values.address,
         phone: values.phone,
         highlights: highlights,
@@ -218,6 +238,22 @@ const TourDetails: React.FC = () => {
           <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
         </Upload>
       </Form.Item>
+
+      <Form.Item
+  name="images"
+  label="Danh Sách Hình Ảnh"
+  valuePropName="fileList"
+  getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+>
+  <Upload
+    name="images"
+    listType="picture"
+    beforeUpload={() => false}
+    maxCount={4}
+  >
+    <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
+  </Upload>
+</Form.Item>
     </Row>
  
 </Card>
