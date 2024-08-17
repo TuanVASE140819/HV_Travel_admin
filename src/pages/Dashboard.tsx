@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Button, Form, Input, message, Card, Row, Col } from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import { UploadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { storage, firestore } from '../firebaseConfig';
-import { ref, listAll, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { ref, listAll, getDownloadURL, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { collection, updateDoc, doc, getDocs } from 'firebase/firestore';
 import CompanyIntroduction from '../components/CompanyIntroduction';
 
@@ -132,6 +132,25 @@ const Dashboard: React.FC = () => {
     return false;
   };
 
+  const handleBannerDelete = (index: number) => {
+    const bannerUrl = banners[index];
+    const bannerRef = ref(storage, bannerUrl);
+
+    deleteObject(bannerRef)
+      .then(() => {
+        setBanners((prevBanners) => {
+          const newBanners = prevBanners.filter((_, i) => i !== index);
+          localStorage.setItem('banners', JSON.stringify(newBanners)); // Save to local storage
+          return newBanners;
+        });
+        message.success('Banner deleted successfully');
+      })
+      .catch((error) => {
+        console.error('Error deleting banner:', error);
+        message.error('Failed to delete banner');
+      });
+  };
+
   const handleCompanyInfoSubmit = async (values: CompanyInfo) => {
     setLoading(true);
     const hideLoading = message.loading('Saving company information...', 0);
@@ -174,16 +193,24 @@ const Dashboard: React.FC = () => {
           <Card title="Banners">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
               {banners.map((banner, index) => (
-                <Upload
-                  key={index}
-                  name="banner"
-                  listType="picture-card"
-                  className="avatar-uploader"
-                  showUploadList={false}
-                  beforeUpload={(file) => handleBannerUpdate(file, index)}
-                >
-                  {banner ? <img src={banner} alt={`Banner ${index + 1}`} style={{ width: '100%' }} /> : uploadButton}
-                </Upload>
+                <div key={index} style={{ position: 'relative' }}>
+                  <Upload
+                    name="banner"
+                    listType="picture-card"
+                    className="avatar-uploader"
+                    showUploadList={false}
+                    beforeUpload={(file) => handleBannerUpdate(file, index)}
+                  >
+                    {banner ? <img src={banner} alt={`Banner ${index + 1}`} style={{ width: '100%' }} /> : uploadButton}
+                  </Upload>
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleBannerDelete(index)}
+                    style={{ position: 'absolute', top: 0, right: 0 }}
+                  />
+                </div>
               ))}
               <Upload
                 name="banner"
