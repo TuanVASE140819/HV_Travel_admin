@@ -18,6 +18,7 @@ interface Tour {
   phone?: string;
   highlights?: string[];
   itinerary?: string;
+  transportation?: string;
 }
 
 interface ItineraryItem {
@@ -82,6 +83,8 @@ const TourDetails: React.FC = () => {
                 },
               ],
             })),
+
+            transportation: tourData.transportation, // Thêm trường transportation
           });
         }
       }
@@ -126,6 +129,7 @@ const TourDetails: React.FC = () => {
         phone: values.phone,
         highlights: highlights,
         itinerary: JSON.stringify(itinerary),
+        transportation: values.transportation, // Add this line
       };
   
       // Remove fields with undefined values
@@ -213,6 +217,11 @@ const TourDetails: React.FC = () => {
     </Col>
     <Col span={12}>
       <Form.Item name="address" label="Địa Chỉ">
+        <Input />
+      </Form.Item>
+    </Col>
+    <Col span={12}>
+      <Form.Item name="transportation" label="Phương Tiện">
         <Input />
       </Form.Item>
     </Col>

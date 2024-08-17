@@ -11,6 +11,9 @@ interface CompanyInfo {
   phone: string;
   address: string;
   gmail: string;
+  facebook?: string;
+  instagram?: string;
+  zalo?: string;
   [key: string]: any;
 }
 
@@ -23,6 +26,9 @@ const Dashboard: React.FC = () => {
     phone: '',
     address: '',
     gmail: '',
+    facebook: '',
+    instagram: '',
+    zalo: '',
   });
   const [form] = Form.useForm();
 
@@ -130,8 +136,7 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     const hideLoading = message.loading('Saving company information...', 0);
     try {
-      await updateDoc(doc(firestore, 'companyInfo', 'info'), values
-      );
+      await updateDoc(doc(firestore, 'companyInfo', 'info'), values);
       message.success('Company information saved successfully');
     } catch (error) {
       console.error('Error saving company information:', error);
@@ -193,57 +198,75 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col span={24} style={{ marginTop: 16 }}>
-  <Card title="Thông tin công ty">
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleCompanyInfoSubmit}
-      initialValues={companyInfo}
-    >
-      <Form.Item
-        label="Website"
-        name="website"
-        rules={[{ required: true, message: 'Please input your website!' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Phone"
-        name="phone"
-        rules={[{ required: true, message: 'Please input your phone number!' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Address"
-        name="address"
-        rules={[{ required: true, message: 'Please input your address!' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Gmail"
-        name="gmail"
-        rules={[{ required: true, message: 'Please input your Gmail!' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading}>
-          Save
-        </Button>
-      </Form.Item>
-    </Form>
-  </Card>
-</Col>
-        <Col span={24}
-          style={{ marginTop: 16 }}
-        >
+          <Card title="Thông tin công ty">
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleCompanyInfoSubmit}
+              initialValues={companyInfo}
+            >
+              <Form.Item
+                label="Website"
+                name="website"
+                rules={[{ required: true, message: 'Please input your website!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Phone"
+                name="phone"
+                rules={[{ required: true, message: 'Please input your phone number!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Address"
+                name="address"
+                rules={[{ required: true, message: 'Please input your address!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Gmail"
+                name="gmail"
+                rules={[{ required: true, message: 'Please input your Gmail!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Facebook"
+                name="facebook"
+                rules={[{ required: true, message: 'Please input your Facebook link!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Instagram"
+                name="instagram"
+                rules={[{ required: true, message: 'Please input your Instagram link!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Zalo"
+                name="zalo"
+                rules={[{ required: true, message: 'Please input your Zalo link!' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  Save
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+        <Col span={24} style={{ marginTop: 16 }}>
           <Card title="Giới thiệu công ty">
             <CompanyIntroduction />
           </Card>
         </Col>
-       
       </Row>
     </div>
   );
