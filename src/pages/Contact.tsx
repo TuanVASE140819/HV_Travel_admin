@@ -67,7 +67,7 @@ const Contact: React.FC = () => {
 
   return (
     <div className="contact-container">
-      <Card className="contact-form-card">
+      {/* <Card className="contact-form-card">
         <h2>Liên hệ</h2>
         <Form onFinish={handleSubmit} layout="vertical">
           <Form.Item name="name" label="Tên" rules={[{ required: true, message: 'Vui lòng nhập tên của bạn' }]}>
@@ -85,7 +85,7 @@ const Contact: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </Card> */}
       <Card className="contact-list-card" style={{ marginTop: 20 }}>
         <h2>Danh sách liên hệ</h2>
         <Table dataSource={contacts} columns={columns} />
